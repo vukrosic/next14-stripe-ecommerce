@@ -20,6 +20,7 @@ const NewArrivals: React.FC<NewArrivalsProps> = ({ products }) => {
 
     const handleBuyNow = async (product: Product) => {
         setIsLoading(product.id);
+
         try {
             const response = await fetch('/api/create-payment-link', {
                 method: 'POST',

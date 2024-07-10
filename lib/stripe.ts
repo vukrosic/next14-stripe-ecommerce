@@ -5,20 +5,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2024-06-20',
 });
 
-// export async function getProductById(id: string) {
-//     const product = await stripe.products.retrieve(id);
-//     const price = await stripe.prices.retrieve(product.default_price as string);
-
-//     return {
-//         id: product.id,
-//         name: product.name,
-//         images: product.images,
-//         price: price.unit_amount! / 100,
-//         currency: price.currency,
-//         priceId: price.id,
-//     };
-// }
-
 export async function createPaymentLink(priceId: string) {
     const session = await stripe.checkout.sessions.create({
         line_items: [
@@ -39,30 +25,7 @@ export async function createPaymentLink(priceId: string) {
 }
 
 
-export async function addProduct(name: string, description: string, amount: number, currency: string, images: string[], category: string) {
-    const product = await stripe.products.create({
-        name,
-        description,
-        images,
-        metadata: {
-            category: category
-        }
-    });
-
-    const price = await stripe.prices.create({
-        product: product.id,
-        unit_amount: amount * 100,
-        currency,
-    });
-
-    await stripe.products.update(product.id, {
-        default_price: price.id,
-    });
-
-    return { product, price };
-}
-
-export async function getProductsByCategory() {
+export async function getProducts() {
     const products = await stripe.products.search({
         query: `metadata['category']:'${process.env.STRIPE_PRODUCT_CATEGORY_METADATA!}' AND active:'true'`,
     });
@@ -82,39 +45,3 @@ export async function getProductsByCategory() {
 
     return productDetails;
 }
-
-
-export async function deleteProduct(productId: string) {
-    try {
-        const deletedProduct = await stripe.products.update(productId, {
-            active: false
-        });
-        // const deletedProduct = await stripe.products.del(productId);
-        return deletedProduct;
-    } catch (error) {
-        console.error('Error deleting product:', error);
-        throw error;
-    }
-}
-
-// export async function getAllProducts() {
-//     const products = await stripe.products.list({
-//         limit: 100, // adjust as needed
-//         active: true,
-//     });
-
-//     const productDetails = await Promise.all(products.data.map(async (product) => {
-//         const price = await stripe.prices.retrieve(product.default_price as string);
-//         return {
-//             id: product.id,
-//             name: product.name,
-//             images: product.images,
-//             price: price.unit_amount! / 100,
-//             currency: price.currency,
-//             priceId: price.id,
-//             category: product.metadata.category,
-//         };
-//     }));
-
-//     return productDetails;
-// }
